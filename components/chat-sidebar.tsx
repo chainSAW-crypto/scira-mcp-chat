@@ -291,9 +291,9 @@ export function ChatSidebar() {
             
             <SidebarFooter className="p-4 border-t border-border/40 mt-auto">
                 <div className={`flex flex-col ${isCollapsed ? "items-center" : ""} gap-3`}>
-                    {/* User Profile */}
-                    <div className={`flex ${isCollapsed ? "justify-center" : "justify-end"}`}>
-                        <UserProfile />
+                    {/* User Profile - Always visible, adapts to collapsed state */}
+                    <div className="w-full">
+                        <UserProfile isCollapsed={isCollapsed} />
                     </div>
                     
                     <motion.div
