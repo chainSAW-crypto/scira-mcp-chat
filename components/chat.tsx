@@ -153,7 +153,7 @@ export default function Chat() {
         })),
       },
       experimental_throttle: 500,
-      onFinish: () => {
+      onFinish: (response) => {
         // Invalidate the chats query to refresh the sidebar
         if (userId) {
           queryClient.invalidateQueries({ queryKey: ['chats', userId, currentProject?.id] });

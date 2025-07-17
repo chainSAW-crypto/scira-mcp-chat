@@ -53,6 +53,8 @@ import { Label } from "@/components/ui/label";
 import { useMCP } from "@/lib/context/mcp-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AnimatePresence, motion } from "motion/react";
+import { nanoid } from "nanoid";
+import { useAuth } from "@/lib/context/auth-context";
 
 export function ChatSidebar() {
     const router = useRouter();
@@ -78,8 +80,42 @@ export function ChatSidebar() {
     const { chats, isLoading, deleteChat, refreshChats } = useChats(userId, currentProjectId);
 
     // Start a new chat
-    const handleNewChat = () => {
-        router.push('/');
+    const handleNewChat = async () => {
+        // Generate a new chat ID
+        const newChatId = nanoid();
+        
+        try {
+            // Create a new chat immediately in the database
+            const response = await fetch('/api/chats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-user-id': userId
+                },
+                body: JSON.stringify({
+                    id: newChatId,
+                    title: 'New Chat',
+                    projectId: currentProjectId
+                })
+            });
+            
+            if (response.ok) {
+                // Navigate to the new chat first
+                router.push(`/chat/${newChatId}`);
+                
+                // Then refresh the chats list
+                setTimeout(() => {
+                    refreshChats();
+                }, 100);
+            } else {
+                // Fallback to old behavior if API call fails
+                router.push('/');
+            }
+        } catch (error) {
+            console.error('Error creating new chat:', error);
+            // Fallback to old behavior
+            router.push('/');
+        }
     };
 
     // Delete a chat

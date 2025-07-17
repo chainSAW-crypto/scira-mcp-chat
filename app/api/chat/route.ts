@@ -68,17 +68,22 @@ export async function POST(req: Request) {
   }
 
   // If it's a new chat, save it immediately
-  if (isNewChat && messages.length > 0) {
+  if (isNewChat) {
     try {
-      // Generate a title based on first user message
+      // Generate a title based on first user message if messages exist
       const userMessage = messages.find(m => m.role === 'user');
       let title = 'New Chat';
 
-      if (userMessage) {
+      if (userMessage && messages.length > 0) {
         try {
           title = await generateTitle([userMessage]);
         } catch (error) {
           console.error("Error generating title:", error);
+          // Fallback to using first part of user message as title
+          if (typeof userMessage.content === 'string') {
+            title = userMessage.content.slice(0, 50);
+            if (userMessage.content.length > 50) title += '...';
+          }
         }
       }
 
