@@ -3,9 +3,21 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, FileText, Trash2, File } from "lucide-react";
+import { Upload, FileText, Trash2, File, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { type KnowledgeBase } from "@/lib/db/schema";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface KnowledgeBaseProps {
   projectId: string;
@@ -15,6 +27,7 @@ interface KnowledgeBaseProps {
 
 export function KnowledgeBase({ projectId, knowledge, onKnowledgeUpdate }: KnowledgeBaseProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<KnowledgeBase | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (files: FileList) => {
@@ -123,19 +136,58 @@ export function KnowledgeBase({ projectId, knowledge, onKnowledgeUpdate }: Knowl
                       </p>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteKnowledge(item.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem 
+                        onClick={() => setItemToDelete(item)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete File
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               ))
             )}
           </div>
         </div>
       </CardContent>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete File</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to delete &ldquo;{itemToDelete?.fileName}&rdquo;? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setItemToDelete(null)}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={() => {
+                  if (itemToDelete) {
+                    deleteKnowledge(itemToDelete.id);
+                    setItemToDelete(null);
+                  }
+                }}
+              >
+                Delete File
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

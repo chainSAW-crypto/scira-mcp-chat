@@ -304,34 +304,62 @@ export function ProjectManager({ currentProject, onProjectChange, userId }: Proj
         </DialogContent>
       </Dialog>
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => projectToDelete && deleteProject(projectToDelete)}
-        disabled={!projectToDelete}
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" disabled={!currentProject}>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          {projects.map(project => (
-            <DropdownMenuItem key={project.id} onClick={() => editProject(project)}>
-              Edit
+          {currentProject && (
+            <DropdownMenuItem onClick={() => editProject(currentProject)}>
+              <Edit2 className="mr-2 h-4 w-4" />
+              Edit Project
             </DropdownMenuItem>
-          ))}
-          {projectToDelete && (
-            <DropdownMenuItem onClick={() => deleteProject(projectToDelete)}>
-              Delete
-            </DropdownMenuItem>
+          )}
+          {currentProject && !currentProject.isDefault && (
+            <>
+              <DropdownMenuItem 
+                onClick={() => setProjectToDelete(currentProject)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Project
+              </DropdownMenuItem>
+            </>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Project</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to delete &ldquo;{projectToDelete?.name}&rdquo;? This action cannot be undone and will delete all associated chats and knowledge files.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setProjectToDelete(null)}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={() => {
+                  if (projectToDelete) {
+                    deleteProject(projectToDelete);
+                    setProjectToDelete(null);
+                  }
+                }}
+              >
+                Delete Project
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
