@@ -100,10 +100,16 @@ export async function POST(req: Request) {
     }
   }
 
-  // Add default server if not already included
+  // Add default servers if not already included
   const defaultJsonServer = {
     type: 'sse' as const,
     url: 'http://localhost:5173/sse',
+    headers: []
+  };
+
+  const researchAgentServer = {
+    type: 'sse' as const,
+    url: 'http://localhost:8081/sse',
     headers: []
   };
   
@@ -112,6 +118,7 @@ export async function POST(req: Request) {
   // Filter out unwanted servers - only allow known good servers
   const allowedServers = mcpServers.filter(server => {
     const isAllowedUrl = server.url === 'http://localhost:5173/sse' || 
+                        server.url === 'http://localhost:8081/sse' || 
                         server.url.startsWith('http://localhost:5173/') ||
                         !server.url.includes('localhost:3003'); // Explicitly block 3003
     
@@ -124,13 +131,22 @@ export async function POST(req: Request) {
   
   console.log("Filtered mcpServers:", allowedServers);
   
-  // Check if this server is already in the list
+  // Check if default servers are already in the list
   const hasDefaultServer = allowedServers.some(server => 
     server.url === defaultJsonServer.url
   );
+  const hasResearchAgent = allowedServers.some(server => 
+    server.url === researchAgentServer.url
+  );
   
-  // Use the combined list
-  const allServers = hasDefaultServer ? allowedServers : [...allowedServers, defaultJsonServer];
+  // Build the combined server list
+  let allServers = [...allowedServers];
+  if (!hasDefaultServer) {
+    allServers.push(defaultJsonServer);
+  }
+  if (!hasResearchAgent) {
+    allServers.push(researchAgentServer);
+  }
   
   console.log("Final server list:", allServers);
 

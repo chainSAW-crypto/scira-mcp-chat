@@ -95,13 +95,23 @@ export function MCPProvider({ children }: { children: React.ReactNode }) {
         description: "Processes and formats JSON and other structured data",
         status: "disconnected",
         headers: []
+      },
+      // Add the Research Agent server as built-in
+      {
+        id: "research-agent",
+        name: "Research Agent",
+        url: "http://localhost:8081/sse",
+        type: "sse",
+        description: "AI-powered research tool using LangGraph for comprehensive web research, query generation, and source verification",
+        status: "disconnected",
+        headers: []
       }
     ]
   );
   
   const [selectedMcpServers, setSelectedMcpServers] = useLocalStorage<string[]>(
     STORAGE_KEYS.SELECTED_MCP_SERVERS, 
-    ["default-json-processor"] // Pre-select the server
+    ["default-json-processor", "research-agent"] // Pre-select both servers
   );
   
   // Create a ref to track active servers and avoid unnecessary re-renders
